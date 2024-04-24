@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import databaseRouter from "./routers/index.js";
 import accountRouter from "./routers/account.js";
+import viewsRouter from "./routers/views.js";
 import { Sequelize, DataTypes } from "sequelize";
 
 const app = express();
@@ -15,7 +16,7 @@ export const sequelizeConst = new Sequelize({
   },
   database: "EcoWorld",
   username: "SA",
-  password: "HpSeF%%ZD$\u0026H*2B",
+  password: "North@23",
   host: "localhost",
   port: 1433,
 });
@@ -80,7 +81,7 @@ const initialize = (server) => {
   setUpDatabase().then(() => {
     server.use("/api/accounts", accountRouter);
     server.use("/api/customers", databaseRouter);
-
+    server.use("/api/views", viewsRouter);
     server.use((req, res) => {
       res.status(404).send();
     });
