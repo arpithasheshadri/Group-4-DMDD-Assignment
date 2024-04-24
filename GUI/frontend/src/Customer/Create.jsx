@@ -1,8 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { TextField, Button, Grid, Typography, Paper } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Grid,
+  Typography,
+  Paper,
+} from "@mui/material";
 
-const CreateCustomerForm = ({ callback }) => {
+const CreateCustomer = ({ callback, initialCustomer }) => {
   const [customer, setCustomer] = useState({
     AccountID: "",
     CustomerID: "",
@@ -15,6 +21,12 @@ const CreateCustomerForm = ({ callback }) => {
     Zipcode: "",
   });
 
+  useEffect(() => {
+    if (initialCustomer) {
+      setCustomer(initialCustomer);
+    }
+  }, [initialCustomer]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCustomer((prevCustomer) => ({
@@ -26,11 +38,17 @@ const CreateCustomerForm = ({ callback }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://localhost:3003/api/customers",
-        customer
-      );
-      console.log("Customer created successfully:", response.data);
+      if (initialCustomer) {
+        // Update existing customer
+        await axios.put(
+          `http://localhost:3003/api/customers/${initialCustomer.CustomerID}`,
+          customer
+        );
+      } else {
+        // Create new customer
+        await axios.post("http://localhost:3003/api/customers", customer);
+      }
+      console.log("Customer saved successfully");
       setCustomer({
         AccountID: "",
         CustomerID: "",
@@ -44,7 +62,7 @@ const CreateCustomerForm = ({ callback }) => {
       });
       callback();
     } catch (error) {
-      console.error("Error creating customer:", error);
+      console.error("Error saving customer:", error);
     }
   };
 
@@ -53,7 +71,7 @@ const CreateCustomerForm = ({ callback }) => {
       <Grid item xs={12} sm={8} md={6} lg={4}>
         <Paper elevation={3} sx={{ padding: 2 }}>
           <Typography variant="h5" align="center" gutterBottom>
-            Create New Customer
+            {initialCustomer ? "Edit Customer" : "Create New Customer"}
           </Typography>
           <form onSubmit={handleSubmit}>
             <TextField
@@ -65,6 +83,7 @@ const CreateCustomerForm = ({ callback }) => {
               value={customer.AccountID}
               onChange={handleChange}
               required
+              disabled={initialCustomer ? true : false} // Disable if editing
             />
             <TextField
               name="CustomerID"
@@ -75,6 +94,7 @@ const CreateCustomerForm = ({ callback }) => {
               value={customer.CustomerID}
               onChange={handleChange}
               required
+              disabled={initialCustomer ? true : false} // Disable if editing
             />
             <TextField
               name="FirstName"
@@ -153,7 +173,7 @@ const CreateCustomerForm = ({ callback }) => {
               fullWidth
               sx={{ marginTop: 2 }}
             >
-              Create Customer
+              {initialCustomer ? "Update Customer" : "Create Customer"}
             </Button>
           </form>
         </Paper>
@@ -162,4 +182,4 @@ const CreateCustomerForm = ({ callback }) => {
   );
 };
 
-export default CreateCustomerForm;
+export default CreateCustomer;

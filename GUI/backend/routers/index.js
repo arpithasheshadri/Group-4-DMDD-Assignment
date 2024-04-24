@@ -99,9 +99,31 @@ const createUser = async (req, res) => {
   }
 };
 
+const deleteUser = async(req, res) => {
+  const customerId = req.params.id;
+  try {
+    // Find the customer by ID
+    const customer = await Customer.findByPk(customerId);
+
+    if (!customer) {
+      return res.status(404).json({ message: 'Customer not found' });
+    }
+
+    // Delete the customer
+    await customer.destroy();
+
+    // Send a success response
+    res.status(200).json({ message: 'Customer deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting customer:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 databaseRouter.route("/").get(getUserDetails);
 databaseRouter.route("/getUser").get(getSelectedUserDetails);
 databaseRouter.post("/", createUser);
-databaseRouter.put("/", updateUser);
+databaseRouter.put("/:id", updateUser);
+databaseRouter.delete("/:id", deleteUser);
 
 export default databaseRouter;

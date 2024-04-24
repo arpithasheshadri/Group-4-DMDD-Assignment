@@ -1,29 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { TextField, Button, Grid, Typography, Paper } from "@mui/material";
 
-const CreateUserForm = ({ callback }) => {
+const CreateUserForm = ({ callback, initialAccount }) => {
   const [AccountID, setAccountId] = useState("");
   const [Username, setUsername] = useState("");
   const [Password, setPassword] = useState("");
 
+  useEffect(() => {
+    if (initialAccount) {
+      setAccountId(initialAccount.AccountID);
+      setUsername(initialAccount.Username);
+      setPassword(initialAccount.Password);
+    }
+  }, [initialAccount]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3003/api/accounts", {
-        AccountID,
-        Username,
-        Password,
-      });
-      console.log("User created successfully:", response.data);
+      if (initialAccount) {
+        
+        await axios.put(
+          `http://localhost:3003/api/accounts/${initialAccount.AccountID}`,
+          { AccountID, Username, Password }
+        );
+      } else {
+        
+        await axios.post("http://localhost:3003/api/accounts", {
+          AccountID,
+          Username,
+          Password,
+        });
+      }
+      console.log("User created successfully");
       setAccountId("");
       setUsername("");
       setPassword("");
       callback();
     } catch (error) {
-      setAccountId("");
-      setUsername("");
-      setPassword("");
       console.error("Error creating user:", error);
     }
   };
@@ -33,7 +47,7 @@ const CreateUserForm = ({ callback }) => {
       <Grid item xs={12} sm={8} md={6} lg={4}>
         <Paper elevation={3} sx={{ padding: 2 }}>
           <Typography variant="h5" align="center" gutterBottom>
-            Create New User
+            {initialAccount ? "Edit User" : "Create New User"}
           </Typography>
           <form onSubmit={handleSubmit}>
             <TextField
@@ -43,6 +57,7 @@ const CreateUserForm = ({ callback }) => {
               margin="normal"
               value={AccountID}
               onChange={(e) => setAccountId(e.target.value)}
+              disabled={initialAccount ? true : false} 
               required
             />
             <TextField
@@ -71,7 +86,7 @@ const CreateUserForm = ({ callback }) => {
               fullWidth
               sx={{ marginTop: 2 }}
             >
-              Create User
+              {initialAccount ? "Update User" : "Create User"}
             </Button>
           </form>
         </Paper>

@@ -15,7 +15,7 @@ export const sequelizeConst = new Sequelize({
   },
   database: "EcoWorld",
   username: "SA",
-  password: "North@23",
+  password: "HpSeF%%ZD$\u0026H*2B",
   host: "localhost",
   port: 1433,
 });

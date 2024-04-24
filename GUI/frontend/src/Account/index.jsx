@@ -8,11 +8,16 @@ import {
   TableHead,
   TableRow,
   Paper,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import CreateUserForm from "./Create.jsx";
+import { Edit, Delete } from "@mui/icons-material";
+import CreateUserForm from "./Create";
 
 const Account = () => {
   const [accounts, setAccounts] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const fetchAccounts = async () => {
     try {
@@ -27,19 +32,43 @@ const Account = () => {
     fetchAccounts();
   }, []);
 
-  const refetchData = () => {
+  const handleEdit = (account) => {
+    setSelectedAccount(account);
+    setIsEditMode(true);
+  };
+
+  const handleDelete = async (accountId) => {
+    try {
+      await axios.delete(`http://localhost:3003/api/accounts/${accountId}`);
+      fetchAccounts();
+    } catch (error) {
+      console.error("Error deleting account:", error);
+    }
+  };
+
+  const handleUpdate = () => {
+    setIsEditMode(false);
+    setSelectedAccount(null);
     fetchAccounts();
   };
 
   return (
     <>
-      <CreateUserForm callback={refetchData} />
+      {!isEditMode ? (
+        <CreateUserForm callback={fetchAccounts} />
+      ) : (
+        <CreateUserForm
+          callback={handleUpdate}
+          initialAccount={selectedAccount}
+        />
+      )}
       <TableContainer component={Paper}>
         <Table aria-label="account table">
           <TableHead>
             <TableRow>
               <TableCell>Account ID</TableCell>
               <TableCell>User Name</TableCell>
+              <TableCell>Actions</TableCell> {/* New column for actions */}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -47,6 +76,24 @@ const Account = () => {
               <TableRow key={account.AccountID}>
                 <TableCell>{account.AccountID}</TableCell>
                 <TableCell>{account.Username}</TableCell>
+                <TableCell>
+                  <Tooltip title="Edit">
+                    <IconButton
+                      aria-label="edit"
+                      onClick={() => handleEdit(account)}
+                    >
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton
+                      aria-label="delete"
+                      onClick={() => handleDelete(account.AccountID)}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

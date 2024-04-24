@@ -50,8 +50,55 @@ export const createAccount = async (req, res) => {
   }
 };
 
+const updateAccount = async (req, res) => {
+  const {
+    AccountID, Username, Password
+  } = req.body;
+  try {
+    const account = await Account.findOne({
+      where: { AccountID: AccountID },
+    });
+    if (!account) {
+      res.status(404).json({ error: "Account not found" });
+    } else {
+      await account.update({
+        Username,
+        Password
+      });
+      res.json(account);
+    }
+  } catch (error) {
+    console.error("Error updating account:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+export const deleteAccount = async (req, res) => {
+  const accountId = req.params.id;
+  try {
+    // Find the customer by ID
+    const account = await Account.findByPk(accountId);
+
+    if (!account) {
+      return res.status(404).json({ message: 'Account not found' });
+    }
+
+    // Delete the customer
+    await account.destroy();
+
+    // Send a success response
+    res.status(200).json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 accountRouter.get("/", getAllAccounts);
 accountRouter.get("/getAccountbyId", getAccountById);
 accountRouter.post("/", createAccount);
+accountRouter.put("/:id", updateAccount);
+accountRouter.delete("/:id", deleteAccount);
 
 export default accountRouter;

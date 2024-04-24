@@ -8,11 +8,16 @@ import {
   TableHead,
   TableRow,
   Paper,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import CreateUser from "./Create.jsx";
+import { Edit, Delete } from "@mui/icons-material";
+import CreateCustomer from "./Create";
 
 const Customer = () => {
   const [customers, setCustomers] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const fetchCustomers = async () => {
     try {
@@ -27,13 +32,37 @@ const Customer = () => {
     fetchCustomers();
   }, []);
 
-  const refetchData = () => {
+  const handleEdit = (customer) => {
+    console.log(customer);
+    setSelectedCustomer(customer);
+    setIsEditMode(true);
+  };
+
+  const handleDelete = async (customerId) => {
+    try {
+      await axios.delete(`http://localhost:3003/api/customers/${customerId}`);
+      fetchCustomers();
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+    }
+  };
+
+  const handleUpdate = () => {
+    setIsEditMode(false);
+    setSelectedCustomer(null);
     fetchCustomers();
   };
 
   return (
     <>
-      <CreateUser callback={refetchData} />
+      {!isEditMode ? (
+        <CreateCustomer callback={fetchCustomers} />
+      ) : (
+        <CreateCustomer
+          callback={handleUpdate}
+          initialCustomer={selectedCustomer}
+        />
+      )}
       <TableContainer component={Paper}>
         <Table aria-label="customer table">
           <TableHead>
@@ -47,6 +76,7 @@ const Customer = () => {
               <TableCell>City</TableCell>
               <TableCell>Address Line 1</TableCell>
               <TableCell>Zipcode</TableCell>
+              <TableCell>Actions</TableCell> {/* New column for actions */}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -61,6 +91,24 @@ const Customer = () => {
                 <TableCell>{customer.City}</TableCell>
                 <TableCell>{customer.AddressLine1}</TableCell>
                 <TableCell>{customer.Zipcode}</TableCell>
+                <TableCell>
+                  <Tooltip title="Edit">
+                    <IconButton
+                      aria-label="edit"
+                      onClick={() => handleEdit(customer)}
+                    >
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton
+                      aria-label="delete"
+                      onClick={() => handleDelete(customer.CustomerID)}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
